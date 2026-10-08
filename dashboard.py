@@ -2,6 +2,7 @@
 Live web dashboard + runtime perception monitor for the RealSense D421 pipeline.
 Streams the annotated IR view and plots live RUNTIME metrics (detection
 confidence, measured distance, FPS, per-bin counts) in the browser via Chart.js.
+Also exposes /detections as JSON for the ROS 2 bridge on a separate machine.
 
 NOTE: these are operational/runtime metrics (what the system is doing live),
 NOT evaluation metrics. Accuracy metrics (mAP, precision/recall) require labeled
@@ -42,6 +43,7 @@ state = {
         "fps": deque(maxlen=HIST),
     },
     "class_counts": Counter(),
+    "detections": [],                   # latest per-frame structured detections
 }
 lock = threading.Lock()
 t0 = time.time()
@@ -83,6 +85,7 @@ def camera_loop():
 
             n, a, b = 0, 0, 0
             confs, dists = [], []
+            frame_dets = []
             for d in range(detections.shape[2]):
                 conf = float(detections[0, 0, d, 2])
                 if conf < CONF_THRESH:
@@ -107,6 +110,12 @@ def camera_loop():
                     dists.append(dist)
                 with lock:
                     state["class_counts"][label] += 1
+                frame_dets.append({
+                    "label": label, "conf": round(conf, 3),
+                    "u": int(cx), "v": int(cy),          # pixel coords (center)
+                    "distance_m": round(dist, 3),
+                    "bin": bin_id
+                })
 
             cv2.line(img, (W//2, 0), (W//2, H), (120, 120, 120), 1)
             now = time.time()
@@ -119,6 +128,7 @@ def camera_loop():
                 with lock:
                     state["frame"] = jpg.tobytes()
                     state["stats"] = {"objects": n, "bin_a": a, "bin_b": b, "fps": round(fps, 1)}
+                    state["detections"] = frame_dets
                     h = state["hist"]
                     h["t"].append(round(now - t0, 1))
                     h["conf"].append(round(float(np.mean(confs)), 3) if confs else 0.0)
@@ -207,6 +217,16 @@ def metrics():
             "hist": {"t": list(h["t"]), "conf": list(h["conf"]),
                      "dist": list(h["dist"]), "fps": list(h["fps"])},
             "classes": {"labels": [c for c, _ in cc], "counts": [n for _, n in cc]},
+        })
+
+@app.route("/detections")
+def detections():
+    """Structured per-frame detections for the ROS 2 bridge (separate machine)."""
+    with lock:
+        return jsonify({
+            "timestamp": time.time(),
+            "frame_size": {"w": W, "h": H},
+            "objects": state.get("detections", []),
         })
 
 def gen():
