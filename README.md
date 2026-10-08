@@ -7,6 +7,15 @@ the perception core of a 3D bin-picking / sorting system.
 
 Built overnight as a working proof-of-concept.
 
+## Contents
+- [What it does](#what-it-does)
+- [Status](#status)
+- [Results](#results)
+- [Hardware](#hardware)
+- [Dependencies](#dependencies)
+- [Run](#run)
+- [Roadmap](#roadmap)
+
 ## What it does
 1. Streams **infrared + depth** from the RealSense D421.
 2. Runs **MobileNet-SSD** object detection on the IR frame.
@@ -42,6 +51,16 @@ See `output/` for annotated frames.
 ## Hardware
 - Raspberry Pi 4 (4 GB), Ubuntu Server 22.04 LTS (ARM64)
 - Intel RealSense D421 stereo depth camera (USB 2.0 in this build)
+
+## Dependencies
+Python deps are pinned in [`requirements.txt`](requirements.txt).
+
+**System (apt):** `python3-pip`, `build-essential`, `python3-dev`, `libgl1-mesa-glx`
+**Python (pip):** `pyrealsense2`, `numpy`, `opencv-python` (4.10 — `readNetFromCaffe` was removed in OpenCV 5.x)
+
+```bash
+pip install -r requirements.txt
+```
 
 ## Dependencies
 **System (apt):** `python3-pip`, `build-essential`, `python3-dev`, `libgl1-mesa-glx`

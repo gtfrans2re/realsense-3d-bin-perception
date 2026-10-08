@@ -1,0 +1,7 @@
+# Python dependencies (install with: pip install -r requirements.txt)
+pyrealsense2==2.58.4.10922
+numpy==2.2.6
+opencv-python==4.10.0.84
+
+# System packages (install separately, not via pip):
+#   sudo apt install -y python3-pip build-essential python3-dev libgl1-mesa-glx
