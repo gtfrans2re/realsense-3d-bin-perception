@@ -34,6 +34,7 @@ Built overnight as a working proof-of-concept.
 - [x] Ubuntu 22.04 (ARM64) on Raspberry Pi 4
 - [x] RealSense D421 streaming via pyrealsense2 (IR + depth)
 - [x] Live depth → real-world distance
+- [x] Live web dashboard (Flask + MJPEG) — view the annotated camera feed from any device on the network
 - [x] Object detection (MobileNet-SSD) on the IR stream
 - [x] Depth fusion → 3D localisation → Bin A/B classification
 - [ ] Swap in **YOLOv11n** (used on Cowbot) — blocked tonight by the CUDA-heavy default install on the Pi; CPU-only build is the next step
@@ -75,6 +76,12 @@ python3 stage1_depth.py
 python3 stage2_bin_perception.py
 ```
 Model files live in `models/` (MobileNet-SSD prototxt + caffemodel).
+
+# Live dashboard (view from your laptop browser)
+```bash
+python3 dashboard.py
+```
+# then open http://<pi-ip>:5000
 
 ## Roadmap
 Replace MobileNet-SSD with **YOLOv11n**, add a live dashboard, move to USB 3.0 for
